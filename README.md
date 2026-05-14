@@ -1,0 +1,28 @@
+# Ball Knowledge
+
+Production-ready Next.js daily football quiz app with anonymous daily attempts, Postgres-backed scoring, OpenAI question generation, strict schema validation, and Vercel cron support.
+
+## Environment Variables
+
+- `NEXT_PUBLIC_SUPABASE_URL`: Supabase project URL.
+- `SUPABASE_SERVICE_ROLE_KEY`: Server-only key used by route handlers for protected scoring and leaderboard reads.
+- `OPENAI_API_KEY`: OpenAI API key for daily question generation.
+- `OPENAI_MODEL`: Optional model override, defaults to `gpt-4.1-mini`.
+- `CRON_SECRET`: Shared secret for `/api/generate-daily`.
+
+## Setup
+
+1. Create a Supabase project.
+2. Run the SQL migrations in order from `supabase/migrations`.
+3. Add the env vars above to `.env.local` and to Vercel.
+4. Install dependencies with `npm install`.
+5. Start locally with `npm run dev`.
+6. Deploy to Vercel. The cron in `vercel.json` calls `/api/generate-daily` daily.
+
+## Routes
+
+- `GET /play`: today's five-question quiz.
+- `POST /api/attempts`: server-scored submit endpoint, one anonymous browser attempt per daily set.
+- `GET /leaderboard`: leaderboard UI with daily, weekly, and all-time tabs.
+- `GET /api/leaderboard?tab=daily|weekly|all-time`: leaderboard data.
+- `POST /api/generate-daily`: admin-safe daily generation endpoint. Send `Authorization: Bearer $CRON_SECRET`.
