@@ -3,34 +3,34 @@ import type { GeneratedSet } from "@/lib/question-schema";
 export const fallbackQuestionSet: GeneratedSet = {
   questions: [
     {
-      prompt: "Who finished as the Premier League's top scorer in the 2000-01 season?",
-      choices: ["Thierry Henry", "Jimmy Floyd Hasselbaink", "Michael Owen", "Teddy Sheringham"],
+      prompt: "Who scored Turkey's golden goal against Senegal in the 2002 World Cup quarter-final?",
+      choices: ["Hakan Sukur", "Ilhan Mansiz", "Hasan Sas", "Nihat Kahveci"],
       correctChoice: 1,
-      explanation: "Jimmy Floyd Hasselbaink scored 23 league goals for Chelsea in the 2000-01 Premier League season."
+      explanation: "Ilhan Mansiz scored in extra time to send Turkey into the 2002 World Cup semi-finals."
     },
     {
-      prompt: "Which club did Yakubu join when he first moved permanently to the Premier League in 2003?",
-      choices: ["Portsmouth", "Middlesbrough", "Everton", "Blackburn Rovers"],
+      prompt: "Which player scored the extra-time winner for Italy against Germany in the 2006 World Cup semi-final?",
+      choices: ["Alessandro Del Piero", "Fabio Grosso", "Andrea Pirlo", "Francesco Totti"],
+      correctChoice: 1,
+      explanation: "Fabio Grosso scored Italy's first extra-time goal before Del Piero added another in Dortmund."
+    },
+    {
+      prompt: "Which country eliminated Italy from the 2010 World Cup with a 3-2 group-stage win?",
+      choices: ["Paraguay", "Slovakia", "New Zealand", "Slovenia"],
+      correctChoice: 1,
+      explanation: "Slovakia beat Italy 3-2 in Johannesburg, knocking the defending champions out in the group stage."
+    },
+    {
+      prompt: "Who scored the only goal when Germany beat France in the 2014 World Cup quarter-final?",
+      choices: ["Mats Hummels", "Thomas Muller", "Miroslav Klose", "Sami Khedira"],
       correctChoice: 0,
-      explanation: "Yakubu joined Portsmouth permanently in 2003 after impressing during their promotion push."
+      explanation: "Mats Hummels headed Germany's winner against France at the Maracana in the 2014 quarter-final."
     },
     {
-      prompt: "In 2005-06, which newly promoted side finished 10th under Alan Pardew?",
-      choices: ["Wigan Athletic", "West Ham United", "Sunderland", "Reading"],
+      prompt: "Which team knocked Spain out of the 2018 World Cup on penalties in the round of 16?",
+      choices: ["Croatia", "Russia", "Denmark", "Switzerland"],
       correctChoice: 1,
-      explanation: "West Ham finished 10th in 2005-06 and also reached the FA Cup final under Alan Pardew."
-    },
-    {
-      prompt: "Which goalkeeper scored for Everton against Bolton Wanderers in the 2003-04 Premier League season?",
-      choices: ["Nigel Martyn", "Richard Wright", "Tim Howard", "Paul Gerrard"],
-      correctChoice: 1,
-      explanation: "Richard Wright scored a wind-assisted goal for Everton against Bolton in December 2003."
-    },
-    {
-      prompt: "Which team beat Manchester United 4-1 at the Riverside Stadium in October 2005?",
-      choices: ["Middlesbrough", "Bolton Wanderers", "Blackburn Rovers", "Charlton Athletic"],
-      correctChoice: 0,
-      explanation: "Middlesbrough beat Manchester United 4-1 at the Riverside in the 2005-06 Premier League season."
+      explanation: "Russia eliminated Spain on penalties in Moscow after a 1-1 draw in the 2018 round of 16."
     }
   ]
 };
