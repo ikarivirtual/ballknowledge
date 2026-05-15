@@ -18,9 +18,9 @@ export async function GET(request: NextRequest) {
   const admin = createAdminClient();
   let query = admin
     .from("attempts")
-    .select("player_name, score, completed_at, daily_sets!inner(quiz_date)")
-    .order("score", { ascending: false })
-    .order("completed_at", { ascending: true })
+    .select("player_name, score, correct_count, total_score, duration_seconds, completed_at, daily_sets!inner(quiz_date)")
+    .order("total_score", { ascending: false })
+    .order("duration_seconds", { ascending: true })
     .limit(50);
 
   if (tab === "daily") {
@@ -42,6 +42,9 @@ export async function GET(request: NextRequest) {
       rank: index + 1,
       name: row.player_name ?? "Guest",
       score: row.score,
+      correctCount: row.correct_count ?? row.score,
+      totalScore: row.total_score ?? row.score * 1000,
+      durationSeconds: row.duration_seconds ?? 0,
       completedAt: row.completed_at
     };
   });

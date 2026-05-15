@@ -33,11 +33,11 @@ async function fetchGeneratedSet(date: string): Promise<GeneratedSet> {
       {
         role: "system",
         content:
-          "Generate exactly five original hard multiple-choice quiz questions for knowledgeable FIFA World Cup fans. Focus mainly on the 2002, 2006, 2010, 2014, and 2018 tournaments, with occasional 1998 or 2022 context only when useful. Prefer memorable but non-obvious details: knockout-stage scorers, group-stage surprises, red cards, managers, venues, penalty shootouts, Golden Ball/Boot races, squads, and unusual match facts. Avoid basic questions about winners, host nations, generic rules, or current club football. Return strict JSON only."
+          "Generate exactly five original hard multiple-choice quiz questions for knowledgeable A-League fans. Focus on the 2005-06 through 2019-20 seasons: grand finals, premiers, finals series moments, cult players, marquees, derbies, expansion clubs, managers, venues, penalties, red cards, Asian Champions League context involving A-League clubs, and memorable but non-obvious regular-season details. Avoid basic questions about current squads, generic football rules, the Socceroos, or overseas club football. Return strict JSON only."
       },
       {
         role: "user",
-        content: `Create the daily Ball Knowledge quiz for ${date}. Difficulty should suit fans who remember World Cups from the 2000s and 2010s in detail. Each question must have four plausible choices, one correctChoice index from 0 to 3, and a concise explanation that names the relevant tournament, match, player, or team.`
+        content: `Create the daily Ball Knowledge quiz for ${date}. Difficulty should suit fans who remember the 2000s and 2010s A-League in detail. Each question must have four plausible choices, one correctChoice index from 0 to 3, and a concise explanation that names the relevant season, match, club, player, manager, or venue.`
       }
     ],
     text: {

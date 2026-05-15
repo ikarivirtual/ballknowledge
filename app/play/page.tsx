@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { generateDailySet } from "@/lib/generate-daily-set";
 import { isoDateInUTC } from "@/lib/dates";
+import { calculateQuizScore } from "@/lib/scoring";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { QuizForm } from "@/components/quiz-form";
 
@@ -125,7 +126,7 @@ export default async function PlayPage() {
   const { data: attempt } = playerId
     ? await admin
         .from("attempts")
-        .select("answers, score")
+        .select("answers, score, correct_count, total_score, duration_seconds, player_name")
         .eq("player_id", playerId)
         .eq("set_id", quiz.dailySet.id)
         .maybeSingle()
@@ -142,6 +143,12 @@ export default async function PlayPage() {
   const correctChoices = attempt
     ? quiz.questions.map((question) => question.correct_choice as number)
     : undefined;
+  const fallbackScore = attempt
+    ? calculateQuizScore(
+        (attempt.correct_count as number | null) ?? (attempt.score as number),
+        (attempt.duration_seconds as number | null) ?? 0
+      )
+    : null;
 
   return (
     <section className="stack">
@@ -158,6 +165,11 @@ export default async function PlayPage() {
           attempt
             ? {
                 score: attempt.score as number,
+                correctCount: (attempt.correct_count as number | null) ?? (attempt.score as number),
+                totalScore: (attempt.total_score as number | null) ?? fallbackScore?.totalScore ?? (attempt.score as number) * 1000,
+                speedBonus: fallbackScore?.speedBonus ?? 0,
+                durationSeconds: (attempt.duration_seconds as number | null) ?? 0,
+                playerName: (attempt.player_name as string | null) ?? "Guest",
                 answers: attempt.answers as number[],
                 correctChoices: correctChoices ?? []
               }

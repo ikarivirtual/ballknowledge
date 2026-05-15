@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isoDateInUTC, startOfWeekUTC } from "@/lib/dates";
+import { formatDuration } from "@/lib/scoring";
 
 export const dynamic = "force-dynamic";
 
@@ -18,9 +19,9 @@ async function getRows(tab: string) {
   const admin = createAdminClient();
   let query = admin
     .from("attempts")
-    .select("player_name, score, completed_at, daily_sets!inner(quiz_date)")
-    .order("score", { ascending: false })
-    .order("completed_at", { ascending: true })
+    .select("player_name, score, correct_count, total_score, duration_seconds, completed_at, daily_sets!inner(quiz_date)")
+    .order("total_score", { ascending: false })
+    .order("duration_seconds", { ascending: true })
     .limit(50);
 
   if (tab === "daily") query = query.eq("daily_sets.quiz_date", isoDateInUTC());
@@ -37,6 +38,9 @@ async function getRows(tab: string) {
       rank: index + 1,
       name: row.player_name ?? "Guest",
       score: row.score as number,
+      correctCount: ((row.correct_count as number | null) ?? row.score) as number,
+      totalScore: ((row.total_score as number | null) ?? (row.score as number) * 1000) as number,
+      durationSeconds: ((row.duration_seconds as number | null) ?? 0) as number,
       completedAt: row.completed_at as string
     };
   });
@@ -54,7 +58,7 @@ export default async function LeaderboardPage({ searchParams }: Props) {
       <div className="hero">
         <p className="kicker">House scores</p>
         <h1>Leaderboard</h1>
-        <p className="subtitle">Daily, weekly, and all-time scores ranked by score, then fastest submit time.</p>
+        <p className="subtitle">Daily, weekly, and all-time scores ranked by points, with speed bonuses in play.</p>
       </div>
       <nav className="tabs" aria-label="Leaderboard range">
         {tabs.map((tab) => (
@@ -71,7 +75,9 @@ export default async function LeaderboardPage({ searchParams }: Props) {
               <tr>
                 <th>Rank</th>
                 <th>Player</th>
-                <th>Score</th>
+                <th>Points</th>
+                <th>Correct</th>
+                <th>Time</th>
               </tr>
             </thead>
             <tbody>
@@ -79,7 +85,9 @@ export default async function LeaderboardPage({ searchParams }: Props) {
                 <tr key={`${row.rank}-${row.completedAt}`}>
                   <td>{row.rank}</td>
                   <td>{row.name}</td>
-                  <td>{row.score}/5</td>
+                  <td>{row.totalScore.toLocaleString()}</td>
+                  <td>{row.correctCount}/5</td>
+                  <td>{formatDuration(row.durationSeconds)}</td>
                 </tr>
               ))}
             </tbody>

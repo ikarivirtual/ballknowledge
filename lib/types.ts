@@ -8,6 +8,11 @@ export type Question = {
 
 export type AttemptResult = {
   score: number;
+  correctCount: number;
+  totalScore: number;
+  speedBonus: number;
+  durationSeconds: number;
+  playerName: string;
   answers: number[];
   correctChoices: number[];
 };

@@ -3,34 +3,34 @@ import type { GeneratedSet } from "@/lib/question-schema";
 export const fallbackQuestionSet: GeneratedSet = {
   questions: [
     {
-      prompt: "Who scored Turkey's golden goal against Senegal in the 2002 World Cup quarter-final?",
-      choices: ["Hakan Sukur", "Ilhan Mansiz", "Hasan Sas", "Nihat Kahveci"],
+      prompt: "Who scored the only goal in the inaugural A-League Grand Final in 2006?",
+      choices: ["Dwight Yorke", "Steve Corica", "Sasho Petrovski", "Mile Sterjovski"],
       correctChoice: 1,
-      explanation: "Ilhan Mansiz scored in extra time to send Turkey into the 2002 World Cup semi-finals."
+      explanation: "Steve Corica scored for Sydney FC in their 1-0 win over Central Coast Mariners in the 2006 Grand Final."
     },
     {
-      prompt: "Which player scored the extra-time winner for Italy against Germany in the 2006 World Cup semi-final?",
-      choices: ["Alessandro Del Piero", "Fabio Grosso", "Andrea Pirlo", "Francesco Totti"],
+      prompt: "Which player scored five goals in Melbourne Victory's 6-0 Grand Final win over Adelaide United in 2007?",
+      choices: ["Danny Allsopp", "Archie Thompson", "Kevin Muscat", "Fred"],
       correctChoice: 1,
-      explanation: "Fabio Grosso scored Italy's first extra-time goal before Del Piero added another in Dortmund."
+      explanation: "Archie Thompson scored five times as Melbourne Victory beat Adelaide United 6-0 in the 2007 Grand Final."
     },
     {
-      prompt: "Which country eliminated Italy from the 2010 World Cup with a 3-2 group-stage win?",
-      choices: ["Paraguay", "Slovakia", "New Zealand", "Slovenia"],
+      prompt: "Who scored Brisbane Roar's late equaliser in the 2011 Grand Final comeback against Central Coast Mariners?",
+      choices: ["Thomas Broich", "Erik Paartalu", "Matt McKay", "Kosta Barbarouses"],
       correctChoice: 1,
-      explanation: "Slovakia beat Italy 3-2 in Johannesburg, knocking the defending champions out in the group stage."
+      explanation: "Erik Paartalu headed Brisbane level at 2-2 in extra time before the Roar won the 2011 Grand Final on penalties."
     },
     {
-      prompt: "Who scored the only goal when Germany beat France in the 2014 World Cup quarter-final?",
-      choices: ["Mats Hummels", "Thomas Muller", "Miroslav Klose", "Sami Khedira"],
-      correctChoice: 0,
-      explanation: "Mats Hummels headed Germany's winner against France at the Maracana in the 2014 quarter-final."
+      prompt: "Which club won the A-League Premiers Plate in its debut 2012-13 season?",
+      choices: ["Melbourne Heart", "Western Sydney Wanderers", "North Queensland Fury", "Gold Coast United"],
+      correctChoice: 1,
+      explanation: "Western Sydney Wanderers finished top of the table in their first A-League season, 2012-13."
     },
     {
-      prompt: "Which team knocked Spain out of the 2018 World Cup on penalties in the round of 16?",
-      choices: ["Croatia", "Russia", "Denmark", "Switzerland"],
+      prompt: "Who scored the extra-time winner for Brisbane Roar against Western Sydney Wanderers in the 2014 Grand Final?",
+      choices: ["Besart Berisha", "Henrique", "Luke Brattan", "Liam Miller"],
       correctChoice: 1,
-      explanation: "Russia eliminated Spain on penalties in Moscow after a 1-1 draw in the 2018 round of 16."
+      explanation: "Henrique scored in extra time as Brisbane Roar beat Western Sydney Wanderers 2-1 in the 2014 Grand Final."
     }
   ]
 };
