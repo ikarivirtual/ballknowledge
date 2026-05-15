@@ -12,6 +12,13 @@ type GenerationResult = {
   error?: string;
 };
 
+type GenerationSource = GenerationResult["source"];
+
+type StoredSet = {
+  setId: string;
+  source: GenerationSource;
+};
+
 async function fetchGeneratedSet(date: string): Promise<GeneratedSet> {
   const env = openAiEnv();
 
@@ -41,17 +48,40 @@ async function fetchGeneratedSet(date: string): Promise<GeneratedSet> {
   return generatedSetSchema.parse(response.output_parsed);
 }
 
-async function insertSet(date: string, set: GeneratedSet, source: "openai" | "fallback", error?: string) {
+async function insertSet(date: string, set: GeneratedSet, source: GenerationSource, error?: string): Promise<StoredSet> {
   const supabase = createAdminClient();
 
   const { data: existing, error: existingError } = await supabase
     .from("daily_sets")
-    .select("id")
+    .select("id, source, generation_status")
     .eq("quiz_date", date)
     .maybeSingle();
 
   if (existingError) throw existingError;
-  if (existing) return existing.id as string;
+
+  if (existing) {
+    const existingSource = existing.source as GenerationSource;
+    const canUpgradeFallback =
+      source === "openai" && (existingSource === "fallback" || existing.generation_status === "failed");
+
+    if (!canUpgradeFallback) {
+      return { setId: existing.id as string, source: existingSource };
+    }
+
+    const { count, error: attemptError } = await supabase
+      .from("attempts")
+      .select("id", { count: "exact", head: true })
+      .eq("set_id", existing.id);
+
+    if (attemptError) throw attemptError;
+
+    if ((count ?? 0) > 0) {
+      return { setId: existing.id as string, source: existingSource };
+    }
+
+    const { error: deleteError } = await supabase.from("daily_sets").delete().eq("id", existing.id);
+    if (deleteError) throw deleteError;
+  }
 
   const { data: dailySet, error: setError } = await supabase
     .from("daily_sets")
@@ -78,7 +108,7 @@ async function insertSet(date: string, set: GeneratedSet, source: "openai" | "fa
   const { error: questionError } = await supabase.from("questions").insert(questions);
   if (questionError) throw questionError;
 
-  return dailySet.id as string;
+  return { setId: dailySet.id as string, source };
 }
 
 export async function generateDailySet(date: string, options: { replaceExisting?: boolean } = {}): Promise<GenerationResult> {
@@ -90,11 +120,11 @@ export async function generateDailySet(date: string, options: { replaceExisting?
 
   try {
     const generatedSet = await fetchGeneratedSet(date);
-    const setId = await insertSet(date, generatedSet, "openai");
-    return { date, source: "openai", setId };
+    const stored = await insertSet(date, generatedSet, "openai");
+    return { date, ...stored };
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown generation error";
-    const setId = await insertSet(date, fallbackQuestionSet, "fallback", message);
-    return { date, source: "fallback", setId, error: message };
+    const stored = await insertSet(date, fallbackQuestionSet, "fallback", message);
+    return { date, ...stored, error: message };
   }
 }
