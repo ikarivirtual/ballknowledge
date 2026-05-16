@@ -61,10 +61,11 @@ async function insertSet(date: string, set: GeneratedSet, source: GenerationSour
 
   if (existing) {
     const existingSource = existing.source as GenerationSource;
-    const canUpgradeFallback =
-      source === "openai" && (existingSource === "fallback" || existing.generation_status === "failed");
+    const canReplaceFallback =
+      (existingSource === "fallback" || existing.generation_status === "failed") &&
+      (source === "openai" || source === "fallback");
 
-    if (!canUpgradeFallback) {
+    if (!canReplaceFallback) {
       return { setId: existing.id as string, source: existingSource };
     }
 

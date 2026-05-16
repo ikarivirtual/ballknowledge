@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { z } from "zod";
 import { isoDateInUTC } from "@/lib/dates";
+import { generateDailySet } from "@/lib/generate-daily-set";
 import { calculateQuizScore } from "@/lib/scoring";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -29,11 +30,26 @@ export async function POST(request: Request) {
   const playerName = body.data.playerName.replace(/\s+/g, " ");
 
   const today = isoDateInUTC();
-  const { data: dailySet, error: setError } = await admin
+  let { data: dailySet, error: setError } = await admin
     .from("daily_sets")
     .select("id")
     .eq("quiz_date", today)
-    .single();
+    .maybeSingle();
+
+  if (setError) {
+    return NextResponse.json({ error: "Today's quiz is not available" }, { status: 404 });
+  }
+
+  if (!dailySet) {
+    try {
+      await generateDailySet(today);
+      const retry = await admin.from("daily_sets").select("id").eq("quiz_date", today).single();
+      dailySet = retry.data;
+      setError = retry.error;
+    } catch {
+      return NextResponse.json({ error: "Today's quiz is not available" }, { status: 404 });
+    }
+  }
 
   if (setError || !dailySet) {
     return NextResponse.json({ error: "Today's quiz is not available" }, { status: 404 });
