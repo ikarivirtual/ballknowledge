@@ -13,18 +13,20 @@ type Props = {
 export function QuizForm({ questions, existingAttempt }: Props) {
   const [answers, setAnswers] = useState<number[]>(existingAttempt?.answers ?? Array(5).fill(-1));
   const [result, setResult] = useState<AttemptResult | null>(existingAttempt);
+  const [answersLocked, setAnswersLocked] = useState(Boolean(existingAttempt));
   const [playerName, setPlayerName] = useState(existingAttempt?.playerName ?? "");
   const [elapsedSeconds, setElapsedSeconds] = useState(existingAttempt?.durationSeconds ?? 0);
+  const [lockedDurationSeconds, setLockedDurationSeconds] = useState(existingAttempt?.durationSeconds ?? 0);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const startedAt = useRef(Date.now());
 
   const complete = useMemo(() => answers.every((answer) => answer >= 0), [answers]);
   const cleanPlayerName = playerName.trim().replace(/\s+/g, " ");
-  const readyToSubmit = complete && cleanPlayerName.length >= 2;
+  const readyToSubmit = answersLocked ? cleanPlayerName.length >= 2 : complete;
 
   useEffect(() => {
-    if (result) return;
+    if (result || answersLocked) return;
 
     const interval = window.setInterval(() => {
       setElapsedSeconds(Math.floor((Date.now() - startedAt.current) / 1000));
@@ -35,7 +37,16 @@ export function QuizForm({ questions, existingAttempt }: Props) {
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const durationSeconds = Math.floor((Date.now() - startedAt.current) / 1000);
+    const durationSeconds = answersLocked ? lockedDurationSeconds : Math.floor((Date.now() - startedAt.current) / 1000);
+
+    if (!answersLocked) {
+      setLockedDurationSeconds(durationSeconds);
+      setElapsedSeconds(durationSeconds);
+      setAnswersLocked(true);
+      setError(null);
+      return;
+    }
+
     setPending(true);
     setError(null);
 
@@ -73,18 +84,21 @@ export function QuizForm({ questions, existingAttempt }: Props) {
 
       {!result ? (
         <div className="player-row">
-          <label className="text-field">
-            <span>Username</span>
-            <input
-              maxLength={24}
-              minLength={2}
-              name="playerName"
-              onChange={(event) => setPlayerName(event.target.value)}
-              placeholder="e.g. CahillVolley"
-              required
-              value={playerName}
-            />
-          </label>
+          {answersLocked ? (
+            <label className="text-field">
+              <span>Username</span>
+              <input
+                autoFocus
+                maxLength={24}
+                minLength={2}
+                name="playerName"
+                onChange={(event) => setPlayerName(event.target.value)}
+                placeholder="e.g. Corica10"
+                required
+                value={playerName}
+              />
+            </label>
+          ) : null}
           <div className="timer" aria-live="polite">
             <span>Time</span>
             <strong>{formatDuration(elapsedSeconds)}</strong>
@@ -93,7 +107,7 @@ export function QuizForm({ questions, existingAttempt }: Props) {
       ) : null}
 
       {questions.map((question, questionIndex) => (
-        <fieldset className="question" key={question.id} disabled={Boolean(result)}>
+        <fieldset className="question" key={question.id} disabled={Boolean(result) || answersLocked}>
           <legend>
             <span>Q{question.position}</span> {question.prompt}
           </legend>
@@ -127,7 +141,7 @@ export function QuizForm({ questions, existingAttempt }: Props) {
       {error ? <p className="error">{error}</p> : null}
       {!result ? (
         <button className="button" disabled={!readyToSubmit || pending} type="submit">
-          {pending ? "Scoring..." : "Submit score"}
+          {pending ? "Scoring..." : answersLocked ? "Save score" : "Submit answers"}
         </button>
       ) : null}
     </form>
