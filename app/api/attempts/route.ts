@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { z } from "zod";
-import { isoDateInUTC } from "@/lib/dates";
+import { isoDateInQuizTimeZone } from "@/lib/dates";
 import { generateDailySet } from "@/lib/generate-daily-set";
 import { calculateQuizScore } from "@/lib/scoring";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -29,10 +29,10 @@ export async function POST(request: Request) {
     : crypto.randomUUID();
   const playerName = body.data.playerName.replace(/\s+/g, " ");
 
-  const today = isoDateInUTC();
+  const today = isoDateInQuizTimeZone();
   let { data: dailySet, error: setError } = await admin
     .from("daily_sets")
-    .select("id")
+    .select("id, generation_status")
     .eq("quiz_date", today)
     .maybeSingle();
 
@@ -43,7 +43,7 @@ export async function POST(request: Request) {
   if (!dailySet) {
     try {
       await generateDailySet(today);
-      const retry = await admin.from("daily_sets").select("id").eq("quiz_date", today).single();
+      const retry = await admin.from("daily_sets").select("id, generation_status").eq("quiz_date", today).single();
       dailySet = retry.data;
       setError = retry.error;
     } catch {
@@ -51,7 +51,7 @@ export async function POST(request: Request) {
     }
   }
 
-  if (setError || !dailySet) {
+  if (setError || !dailySet || dailySet.generation_status !== "ready") {
     return NextResponse.json({ error: "Today's quiz is not available" }, { status: 404 });
   }
 

@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { generateDailySet } from "@/lib/generate-daily-set";
-import { isoDateInUTC } from "@/lib/dates";
+import { isoDateInQuizTimeZone } from "@/lib/dates";
 import { calculateQuizScore } from "@/lib/scoring";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { QuizForm } from "@/components/quiz-form";
@@ -17,13 +17,13 @@ function errorMessage(error: unknown) {
 
 async function getTodayQuiz() {
   const admin = createAdminClient();
-  const today = isoDateInUTC();
+  const today = isoDateInQuizTimeZone();
 
   let initialSet;
   try {
     initialSet = await admin
       .from("daily_sets")
-      .select("id, quiz_date, source")
+      .select("id, quiz_date, source, generation_status")
       .eq("quiz_date", today)
       .maybeSingle();
   } catch (error) {
@@ -49,7 +49,7 @@ async function getTodayQuiz() {
       await generateDailySet(today);
       const retry = await admin
         .from("daily_sets")
-        .select("id, quiz_date, source")
+        .select("id, quiz_date, source, generation_status")
         .eq("quiz_date", today)
         .single();
 
@@ -75,6 +75,17 @@ async function getTodayQuiz() {
   if (!dailySet) {
     return {
       error: "Today's quiz is not available yet.",
+      dailySet: null,
+      questions: []
+    };
+  }
+
+  if (dailySet.generation_status !== "ready") {
+    return {
+      error:
+        dailySet.generation_status === "pending"
+          ? "Today's quiz has been generated and is waiting for admin review."
+          : "Today's quiz is not available yet.",
       dailySet: null,
       questions: []
     };

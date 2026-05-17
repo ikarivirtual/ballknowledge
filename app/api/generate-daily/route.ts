@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { generateDailySet } from "@/lib/generate-daily-set";
-import { isoDateInUTC } from "@/lib/dates";
+import { isoDateInQuizTimeZone } from "@/lib/dates";
 import { cronEnv } from "@/lib/env";
 
 export const runtime = "nodejs";
@@ -21,7 +21,7 @@ async function handler(request: NextRequest) {
   const url = new URL(request.url);
   const requestedDate = url.searchParams.get("date");
   const force = url.searchParams.get("force") === "true";
-  const date = requestedDate ?? isoDateInUTC();
+  const date = requestedDate ?? isoDateInQuizTimeZone();
   const result = await generateDailySet(date, { replaceExisting: force });
 
   return NextResponse.json(result);

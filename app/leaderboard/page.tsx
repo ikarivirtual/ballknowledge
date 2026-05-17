@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { isoDateInUTC, startOfWeekUTC } from "@/lib/dates";
+import { isoDateInQuizTimeZone, startOfWeekInQuizTimeZone } from "@/lib/dates";
 import { formatDuration } from "@/lib/scoring";
 
 export const dynamic = "force-dynamic";
@@ -24,8 +24,8 @@ async function getRows(tab: string) {
     .order("duration_seconds", { ascending: true })
     .limit(50);
 
-  if (tab === "daily") query = query.eq("daily_sets.quiz_date", isoDateInUTC());
-  if (tab === "weekly") query = query.gte("completed_at", startOfWeekUTC());
+  if (tab === "daily") query = query.eq("daily_sets.quiz_date", isoDateInQuizTimeZone());
+  if (tab === "weekly") query = query.gte("completed_at", startOfWeekInQuizTimeZone());
 
   const { data, error } = await query;
 

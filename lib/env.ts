@@ -14,6 +14,10 @@ const cronEnvSchema = z.object({
   CRON_SECRET: z.string().min(1)
 });
 
+const reviewEnvSchema = z.object({
+  ADMIN_REVIEW_REQUIRED: z.enum(["true", "false"]).default("false")
+});
+
 export function supabaseAdminEnv() {
   return supabaseAdminEnvSchema.parse({
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -31,5 +35,11 @@ export function openAiEnv() {
 export function cronEnv() {
   return cronEnvSchema.parse({
     CRON_SECRET: process.env.CRON_SECRET
+  });
+}
+
+export function reviewEnv() {
+  return reviewEnvSchema.parse({
+    ADMIN_REVIEW_REQUIRED: process.env.ADMIN_REVIEW_REQUIRED
   });
 }
