@@ -7,6 +7,7 @@ import { generatedSetSchema, type GeneratedSet } from "@/lib/question-schema";
 import { openAiEnv, reviewEnv } from "@/lib/env";
 import { correctionsPrompt } from "@/lib/trivia-corrections";
 import { factsForDate, factsPrompt, type TriviaFact } from "@/lib/world-cup-facts";
+import { worldCupQuestionSetForDate } from "@/lib/world-cup-question-bank";
 import { validateGeneratedSet } from "@/lib/validate-generated-set";
 
 type GenerationResult = {
@@ -139,6 +140,17 @@ async function auditGeneratedSetAgainstFacts(
 }
 
 async function fetchGeneratedSet(date: string): Promise<GeneratedSet> {
+  if (isWorldCupThemeDate(date)) {
+    const verifiedSet = worldCupQuestionSetForDate(date);
+    const deterministicIssues = validateGeneratedSet(verifiedSet);
+
+    if (deterministicIssues.length) {
+      throw new Error(`Verified World Cup quiz failed validation: ${deterministicIssues.join(" | ")}`);
+    }
+
+    return verifiedSet;
+  }
+
   const env = openAiEnv();
 
   if (!env.OPENAI_API_KEY) {
@@ -191,8 +203,9 @@ async function insertSet(date: string, set: GeneratedSet, source: GenerationSour
 
   if (existing) {
     const existingSource = existing.source as GenerationSource;
+    const canReplaceThemeSet = isWorldCupThemeDate(date) && source === "openai";
     const canReplaceFallback =
-      (existingSource === "fallback" || existing.generation_status === "failed") &&
+      (canReplaceThemeSet || existingSource === "fallback" || existing.generation_status === "failed") &&
       (source === "openai" || source === "fallback");
 
     if (!canReplaceFallback) {

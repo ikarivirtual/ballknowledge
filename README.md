@@ -32,7 +32,7 @@ Production-ready Next.js daily football quiz app with anonymous daily attempts, 
 
 ## Question Quality Safeguards
 
-- World Cup campaign questions are generated from a curated local fact pack in `lib/world-cup-facts.ts`.
+- World Cup campaign questions are selected from verified local questions in `lib/world-cup-question-bank.ts`, backed by the curated fact pack in `lib/world-cup-facts.ts`.
 - Generated sets pass deterministic validation for duplicate choices, risky wording, and weak explanations.
 - Generated sets pass a model-based fact-check audit before storage.
 - World Cup campaign sets also pass a source-grounding audit against the supplied fact pack.
