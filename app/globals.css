@@ -159,6 +159,23 @@ h1 {
   text-shadow: 3px 3px 0 var(--ink);
 }
 
+h2,
+h3 {
+  margin: 0;
+  color: var(--ink);
+  line-height: 1.05;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+h2 {
+  font-size: clamp(1.8rem, 5vw, 3.6rem);
+}
+
+h3 {
+  font-size: clamp(1.1rem, 3vw, 1.45rem);
+}
+
 .subtitle {
   position: relative;
   z-index: 1;
@@ -176,6 +193,79 @@ h1 {
   border-radius: 0;
   box-shadow: var(--shadow);
   padding: clamp(16px, 4vw, 28px);
+}
+
+.compact-hero {
+  min-height: 320px;
+}
+
+.cta-row {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: center;
+}
+
+.standalone-link {
+  border: 3px solid var(--line);
+  box-shadow: 5px 5px 0 var(--ink);
+}
+
+.feature-grid,
+.seo-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.feature-grid > div {
+  display: grid;
+  gap: 8px;
+  min-height: 120px;
+  border: 3px solid var(--line);
+  background: #fffdf4;
+  padding: 16px;
+}
+
+.feature-grid strong {
+  font-size: 1.05rem;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.feature-grid span,
+.lead-copy {
+  color: var(--muted);
+  font-weight: 750;
+  line-height: 1.5;
+}
+
+.mini-panel {
+  display: grid;
+  gap: 14px;
+  align-content: start;
+}
+
+.text-link {
+  width: fit-content;
+  border-bottom: 3px solid var(--red);
+  color: var(--red);
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.text-link:hover {
+  color: var(--red-dark);
+  border-bottom-color: var(--red-dark);
+}
+
+.faq-item {
+  display: grid;
+  gap: 8px;
+  padding-top: 18px;
+  border-top: 3px solid var(--line);
 }
 
 .result-banner {
@@ -416,7 +506,7 @@ h1 {
 
   .nav {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     border-top: 3px solid var(--line);
   }
 
@@ -439,7 +529,9 @@ h1 {
 
   .choices,
   .tabs,
-  .player-row {
+  .player-row,
+  .feature-grid,
+  .seo-grid {
     grid-template-columns: 1fr;
   }
 

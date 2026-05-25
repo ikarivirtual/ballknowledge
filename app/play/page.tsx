@@ -1,11 +1,21 @@
 import { cookies } from "next/headers";
+import type { Metadata } from "next";
 import { generateDailySet } from "@/lib/generate-daily-set";
 import { isoDateInQuizTimeZone } from "@/lib/dates";
 import { calculateQuizScore } from "@/lib/scoring";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { QuizForm } from "@/components/quiz-form";
+import { pageMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = pageMetadata({
+  title: "Play Today's Daily Football Quiz",
+  description:
+    "Play today's Ball Knowledge football trivia game: five fresh football questions, one attempt, instant scoring, and answer explanations.",
+  path: "/play",
+  keywords: ["daily football quiz", "football trivia game", "daily trivia quiz"]
+});
 
 function errorMessage(error: unknown) {
   if (error instanceof Error) return error.message;

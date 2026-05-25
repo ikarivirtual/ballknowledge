@@ -1,9 +1,19 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isoDateInQuizTimeZone, startOfWeekInQuizTimeZone } from "@/lib/dates";
 import { formatDuration } from "@/lib/scoring";
+import { pageMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = pageMetadata({
+  title: "Football Quiz Leaderboard",
+  description:
+    "See the Ball Knowledge daily, weekly, and all-time football quiz leaderboard ranked by points, correct answers, and speed.",
+  path: "/leaderboard",
+  keywords: ["football quiz leaderboard", "daily football trivia", "football trivia game"]
+});
 
 type Props = {
   searchParams: Promise<{ tab?: string }>;
