@@ -32,9 +32,26 @@ Production-ready Next.js daily football quiz app with anonymous daily attempts, 
 
 ## Question Quality Safeguards
 
-- World Cup campaign questions are selected from verified local questions in `lib/world-cup-question-bank.ts`, backed by the curated fact pack in `lib/world-cup-facts.ts`.
+- World Cup campaign generation is grounded in the curated fact pack in `lib/world-cup-facts.ts`; if OpenAI is unavailable, it falls back to verified local questions in `lib/world-cup-question-bank.ts`.
+- Used prompts are stored in `question_history` so generation can avoid already published questions even if old playable rows are pruned.
 - Generated sets pass deterministic validation for duplicate choices, risky wording, and weak explanations.
 - Generated sets pass a model-based fact-check audit before storage.
 - World Cup campaign sets also pass a source-grounding audit against the supplied fact pack.
 - Known corrections live in `lib/trivia-corrections.ts` and are injected into generation and audit prompts.
 - To enable manual review, run `supabase/migrations/0002_pending_review.sql`, set `ADMIN_REVIEW_REQUIRED=true`, then approve with `POST /api/admin/approve-daily`.
+
+## Safe Question Pruning
+
+Do not prune `question_history`; it is the generator's memory and is intentionally small at five rows per day.
+
+If you want to keep only recent playable question rows, run a manual prune after `supabase/migrations/0004_question_history.sql` has been applied and backfilled:
+
+```sql
+delete from public.questions as questions
+using public.daily_sets as daily_sets
+where questions.set_id = daily_sets.id
+  and daily_sets.generation_status = 'ready'
+  and daily_sets.quiz_date < current_date - interval '30 days';
+```
+
+This keeps `daily_sets`, attempts, leaderboards, and `question_history` intact. Increase the `30 days` window if you later add archive, replay, or old-result pages that need to show the original question text.

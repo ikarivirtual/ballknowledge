@@ -9,6 +9,7 @@ import { correctionsPrompt } from "@/lib/trivia-corrections";
 import { factsForDate, factsPrompt, type TriviaFact } from "@/lib/world-cup-facts";
 import { worldCupQuestionSetForDate } from "@/lib/world-cup-question-bank";
 import { validateGeneratedSet } from "@/lib/validate-generated-set";
+import { fetchQuestionHistoryPrompts, recordQuestionHistory } from "@/lib/question-history";
 
 type GenerationResult = {
   date: string;
@@ -62,11 +63,17 @@ async function generateCandidateSet(
   openai: OpenAI,
   model: string,
   prompt: ReturnType<typeof questionPromptForDate>,
-  previousIssues: string[]
+  previousIssues: string[],
+  recentPrompts: string[]
 ) {
   const retryInstruction = previousIssues.length
     ? `Avoid these rejected issues from the previous attempt: ${previousIssues.join(" | ")}`
     : "No previous audit issues.";
+  const recentPromptInstruction = recentPrompts.length
+    ? `Do not reuse, lightly reword, or ask the same football fact as any of these recently published prompts:\n${recentPrompts
+        .map((recentPrompt) => `- ${recentPrompt}`)
+        .join("\n")}`
+    : "No recent published prompts were available for comparison.";
 
   const response = await openai.responses.parse({
     model,
@@ -77,7 +84,7 @@ async function generateCandidateSet(
       },
       {
         role: "user",
-        content: `${prompt.user}\n\n${retryInstruction}`
+        content: `${prompt.user}\n\n${recentPromptInstruction}\n\n${retryInstruction}`
       }
     ],
     text: {
@@ -140,7 +147,10 @@ async function auditGeneratedSetAgainstFacts(
 }
 
 async function fetchGeneratedSet(date: string): Promise<GeneratedSet> {
-  if (isWorldCupThemeDate(date)) {
+  const env = openAiEnv();
+  const recentPrompts = await fetchQuestionHistoryPrompts(date);
+
+  if (isWorldCupThemeDate(date) && !env.OPENAI_API_KEY) {
     const verifiedSet = worldCupQuestionSetForDate(date);
     const deterministicIssues = validateGeneratedSet(verifiedSet);
 
@@ -151,8 +161,6 @@ async function fetchGeneratedSet(date: string): Promise<GeneratedSet> {
     return verifiedSet;
   }
 
-  const env = openAiEnv();
-
   if (!env.OPENAI_API_KEY) {
     throw new Error("OPENAI_API_KEY is not configured");
   }
@@ -162,8 +170,8 @@ async function fetchGeneratedSet(date: string): Promise<GeneratedSet> {
   let auditIssues: string[] = [];
 
   for (let attempt = 1; attempt <= MAX_GENERATION_ATTEMPTS; attempt += 1) {
-    const generatedSet = await generateCandidateSet(openai, env.OPENAI_MODEL, prompt, auditIssues);
-    const deterministicIssues = validateGeneratedSet(generatedSet);
+    const generatedSet = await generateCandidateSet(openai, env.OPENAI_MODEL, prompt, auditIssues, recentPrompts);
+    const deterministicIssues = validateGeneratedSet(generatedSet, { recentPrompts });
 
     if (deterministicIssues.length) {
       auditIssues = deterministicIssues;
@@ -187,6 +195,10 @@ async function fetchGeneratedSet(date: string): Promise<GeneratedSet> {
   }
 
   throw new Error(`Generated quiz failed fact-check audit: ${auditIssues.join(" | ")}`);
+}
+
+function fallbackSetForDate(date: string) {
+  return isWorldCupThemeDate(date) ? worldCupQuestionSetForDate(date) : fallbackQuestionSet;
 }
 
 async function insertSet(date: string, set: GeneratedSet, source: GenerationSource, error?: string): Promise<StoredSet & { status: GenerationResult["status"] }> {
@@ -252,6 +264,10 @@ async function insertSet(date: string, set: GeneratedSet, source: GenerationSour
   const { error: questionError } = await supabase.from("questions").insert(questions);
   if (questionError) throw questionError;
 
+  if (status !== "failed") {
+    await recordQuestionHistory(date, dailySet.id as string, set, source);
+  }
+
   return { setId: dailySet.id as string, source, status };
 }
 
@@ -268,7 +284,7 @@ export async function generateDailySet(date: string, options: { replaceExisting?
     return { date, ...stored };
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown generation error";
-    const stored = await insertSet(date, fallbackQuestionSet, "fallback", message);
+    const stored = await insertSet(date, fallbackSetForDate(date), "fallback", message);
     return { date, ...stored, error: message };
   }
 }

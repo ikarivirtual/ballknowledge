@@ -176,17 +176,26 @@ export const worldCupFacts: TriviaFact[] = [
   }
 ];
 
-export function factsForDate(date: string, count = 12) {
-  const seed = [...date].reduce((total, char) => total + char.charCodeAt(0), 0);
-  const facts = [...worldCupFacts];
+function dateDayNumber(date: string) {
+  const [year, month, day] = date.split("-").map(Number);
+  return Math.floor(Date.UTC(year, month - 1, day) / 86400000);
+}
 
-  return facts
-    .sort((left, right) => {
-      const leftScore = (left.id.length * 31 + seed + left.fact.length) % 97;
-      const rightScore = (right.id.length * 31 + seed + right.fact.length) % 97;
-      return leftScore - rightScore;
-    })
-    .slice(0, count);
+function hashText(text: string) {
+  let hash = 0;
+
+  for (let index = 0; index < text.length; index += 1) {
+    hash = (hash * 31 + text.charCodeAt(index)) >>> 0;
+  }
+
+  return hash;
+}
+
+export function factsForDate(date: string, count = 12) {
+  const orderedFacts = [...worldCupFacts].sort((left, right) => hashText(left.id) - hashText(right.id));
+  const start = (dateDayNumber(date) * count) % orderedFacts.length;
+
+  return Array.from({ length: Math.min(count, orderedFacts.length) }, (_, index) => orderedFacts[(start + index) % orderedFacts.length]);
 }
 
 export function factsPrompt(facts: TriviaFact[]) {
