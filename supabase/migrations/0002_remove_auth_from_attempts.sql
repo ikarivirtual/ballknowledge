@@ -39,6 +39,7 @@ begin
   end if;
 end $$;
 
+
 do $$
 begin
   if exists (

@@ -203,7 +203,17 @@ function fallbackSetForDate(date: string) {
 
 async function insertSet(date: string, set: GeneratedSet, source: GenerationSource, error?: string): Promise<StoredSet & { status: GenerationResult["status"] }> {
   const supabase = createAdminClient();
-  const status = error ? "failed" : reviewEnv().ADMIN_REVIEW_REQUIRED === "true" && source === "openai" ? "pending" : "ready";
+  // Fallback sets are pre-verified quizzes (curated bank / World Cup bank), so they must be served
+  // even when OpenAI generation failed. We still record `generation_error` for observability, but a
+  // fallback is "ready", not "failed" — otherwise any OpenAI failure leaves the day with no playable
+  // quiz despite a valid set being stored. Only a non-fallback error stays "failed".
+  const status = error
+    ? source === "fallback"
+      ? "ready"
+      : "failed"
+    : reviewEnv().ADMIN_REVIEW_REQUIRED === "true" && source === "openai"
+    ? "pending"
+    : "ready";
 
   const { data: existing, error: existingError } = await supabase
     .from("daily_sets")

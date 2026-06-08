@@ -124,10 +124,11 @@ export default async function PlayPage() {
     return (
       <section className="panel stack">
         <p className="kicker">Daily special unavailable</p>
-        <h1>Setup needed</h1>
+        <h1>Today&apos;s quiz is unavailable</h1>
         <p className="subtitle">{quiz.error}</p>
         <p className="muted">
-          Add real Supabase values to `.env.local`, run the migrations, and restart the dev server.
+          If this is a local setup issue, check the Supabase values in `.env`, confirm the
+          migrations have been applied, and restart the dev server.
         </p>
       </section>
     );

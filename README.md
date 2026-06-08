@@ -15,7 +15,7 @@ Production-ready Next.js daily football quiz app with anonymous daily attempts, 
 
 1. Create a Supabase project.
 2. Run the SQL migrations in order from `supabase/migrations`.
-3. Add the env vars above to `.env.local` and to Vercel.
+3. Add the env vars above to `.env` locally and to Vercel.
 4. Install dependencies with `npm install`.
 5. Start locally with `npm run dev`.
 6. Deploy to Vercel. The cron in `vercel.json` calls `/api/generate-daily` daily.
